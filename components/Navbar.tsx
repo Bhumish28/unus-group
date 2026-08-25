@@ -213,7 +213,7 @@ export default function Navbar() {
           "
         >
           <Image
-            src="/unus-logo.png"
+            src="/unus-logo.jpeg"
             alt="UNUS Group Logo"
             width={68}
             height={68}
@@ -517,6 +517,7 @@ export default function Navbar() {
 
             px-6
             py-6
+
 
             shadow-xl
 
