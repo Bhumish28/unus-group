@@ -5,21 +5,121 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronDown, Menu, X } from "lucide-react";
 
+type ActiveNav =
+  | "home"
+  | "about"
+  | "companies"
+  | "services"
+  | "projects"
+  | "contact";
+
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
+  const [activeNav, setActiveNav] =
+    useState<ActiveNav>("home");
+
+  /* =====================================================
+     SCROLL STATE + ACTIVE NAVBAR SECTION
+  ====================================================== */
+
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      const scrollY = window.scrollY;
+
+      setIsScrolled(scrollY > 50);
+
+      /*
+        Position used to decide which section is active.
+        Kept slightly below the navbar.
+      */
+      const checkPosition = scrollY + 180;
+
+      const sections: {
+        id: string;
+        nav: ActiveNav;
+      }[] = [
+        {
+          id: "hero",
+          nav: "home",
+        },
+        {
+          id: "companies",
+          nav: "companies",
+        },
+        {
+          id: "services",
+          nav: "services",
+        },
+        {
+          id: "about",
+          nav: "about",
+        },
+        {
+          id: "projects",
+          nav: "projects",
+        },
+        {
+          id: "contact",
+          nav: "contact",
+        },
+      ];
+
+      let current: ActiveNav = "home";
+
+      sections.forEach((section) => {
+        const element =
+          document.getElementById(section.id);
+
+        if (
+          element &&
+          element.offsetTop <= checkPosition
+        ) {
+          current = section.nav;
+        }
+      });
+
+      /*
+        Make Contact active when visitor reaches
+        the very bottom of the website.
+      */
+      const reachedBottom =
+        window.innerHeight + scrollY >=
+        document.documentElement.scrollHeight - 80;
+
+      if (reachedBottom) {
+        current = "contact";
+      }
+
+      setActiveNav(current);
     };
 
     handleScroll();
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener(
+      "scroll",
+      handleScroll,
+      {
+        passive: true,
+      }
+    );
+
+    window.addEventListener(
+      "resize",
+      handleScroll
+    );
 
     return () => {
-      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener(
+        "scroll",
+        handleScroll
+      );
+
+      window.removeEventListener(
+        "resize",
+        handleScroll
+      );
     };
   }, []);
 
@@ -33,16 +133,20 @@ export default function Navbar() {
   ) => {
     event.preventDefault();
 
-    const target = document.getElementById(sectionId);
+    const target =
+      document.getElementById(sectionId);
 
     if (!target) {
-      console.warn(`Section #${sectionId} was not found.`);
+      console.warn(
+        `Section #${sectionId} was not found.`
+      );
+
       return;
     }
 
     /*
-      Reduced from 110px so sections do not leave
-      too much blank space below the navbar.
+      IMPORTANT:
+      Keep this at 110px.
     */
     const navbarOffset = 110;
 
@@ -73,53 +177,148 @@ export default function Navbar() {
     ? "text-[#26362F] hover:text-[#145A46]"
     : "text-white hover:text-white";
 
-  const navLinkClass = `
-    inline-block
+  const getNavLinkClass = (
+    nav: ActiveNav
+  ) => {
+    const isActive =
+      activeNav === nav;
 
-    text-[15px]
-    font-bold
+    return `
+      relative
+      inline-block
 
-    tracking-[0.01em]
+      text-[15px]
+      font-bold
 
-    transition-all
-    duration-200
+      tracking-[0.01em]
 
-    hover:scale-105
-    active:scale-95
+      transition-all
+      duration-200
 
-    ${navTextColor}
+      hover:scale-105
+      active:scale-95
 
-    ${
-      !isScrolled
-        ? "drop-shadow-[0_2px_5px_rgba(0,0,0,0.90)]"
-        : ""
-    }
-  `;
+      ${
+        isActive
+          ? isScrolled
+            ? "text-[#145A46]"
+            : "text-white"
+          : navTextColor
+      }
 
-  const dropdownButtonClass = `
-    flex
-    items-center
-    gap-1
+      ${
+        !isScrolled
+          ? "drop-shadow-[0_2px_5px_rgba(0,0,0,0.90)]"
+          : ""
+      }
 
-    text-[15px]
-    font-bold
+      after:absolute
+      after:left-0
+      after:-bottom-[9px]
 
-    tracking-[0.01em]
+      after:h-[2px]
+      after:rounded-full
 
-    transition-all
-    duration-200
+      after:transition-all
+      after:duration-300
 
-    hover:scale-105
-    active:scale-95
+      ${
+        isActive
+          ? `
+              after:w-full
+              ${
+                isScrolled
+                  ? "after:bg-[#145A46]"
+                  : "after:bg-white"
+              }
+            `
+          : `
+              after:w-0
+              ${
+                isScrolled
+                  ? "after:bg-[#145A46]"
+                  : "after:bg-white"
+              }
 
-    ${navTextColor}
+              hover:after:w-full
+            `
+      }
+    `;
+  };
 
-    ${
-      !isScrolled
-        ? "drop-shadow-[0_2px_5px_rgba(0,0,0,0.90)]"
-        : ""
-    }
-  `;
+  const getDropdownButtonClass = (
+    nav: ActiveNav
+  ) => {
+    const isActive =
+      activeNav === nav;
+
+    return `
+      relative
+
+      flex
+      items-center
+      gap-1
+
+      text-[15px]
+      font-bold
+
+      tracking-[0.01em]
+
+      transition-all
+      duration-200
+
+      hover:scale-105
+      active:scale-95
+
+      ${
+        isActive
+          ? isScrolled
+            ? "text-[#145A46]"
+            : "text-white"
+          : navTextColor
+      }
+
+      ${
+        !isScrolled
+          ? "drop-shadow-[0_2px_5px_rgba(0,0,0,0.90)]"
+          : ""
+      }
+
+      after:absolute
+      after:left-0
+      after:-bottom-[9px]
+
+      after:h-[2px]
+      after:rounded-full
+
+      after:transition-all
+      after:duration-300
+
+      ${
+        isActive
+          ? `
+              after:w-full
+
+              ${
+                isScrolled
+                  ? "after:bg-[#145A46]"
+                  : "after:bg-white"
+              }
+            `
+          : `
+              after:w-0
+
+              ${
+                isScrolled
+                  ? "after:bg-[#145A46]"
+                  : "after:bg-white"
+              }
+
+              hover:after:w-full
+            `
+      }
+    `;
+  };
 
   return (
     <header
@@ -286,8 +485,13 @@ export default function Navbar() {
           {/* HOME */}
 
           <Link
-            href="/"
-            className={navLinkClass}
+            href="#hero"
+            onClick={(e) =>
+              goToSection(e, "hero")
+            }
+            className={getNavLinkClass(
+              "home"
+            )}
           >
             Home
           </Link>
@@ -299,7 +503,9 @@ export default function Navbar() {
           <div className="group relative">
             <button
               type="button"
-              className={dropdownButtonClass}
+              className={getDropdownButtonClass(
+                "about"
+              )}
             >
               About Us
 
@@ -382,7 +588,10 @@ export default function Navbar() {
               <DropdownLink
                 href="#why-unus"
                 onClick={(e) =>
-                  goToSection(e, "why-unus")
+                  goToSection(
+                    e,
+                    "why-unus"
+                  )
                 }
               >
                 Why Choose UNUS
@@ -408,7 +617,9 @@ export default function Navbar() {
             onClick={(e) =>
               goToSection(e, "companies")
             }
-            className={navLinkClass}
+            className={getNavLinkClass(
+              "companies"
+            )}
           >
             Our Companies
           </Link>
@@ -422,13 +633,15 @@ export default function Navbar() {
             onClick={(e) =>
               goToSection(e, "services")
             }
-            className={navLinkClass}
+            className={getNavLinkClass(
+              "services"
+            )}
           >
             Services
           </Link>
 
           {/* =================================================
-              PROJECTS - NO DROPDOWN
+              PROJECTS
           ================================================== */}
 
           <Link
@@ -436,7 +649,9 @@ export default function Navbar() {
             onClick={(e) =>
               goToSection(e, "projects")
             }
-            className={navLinkClass}
+            className={getNavLinkClass(
+              "projects"
+            )}
           >
             Projects
           </Link>
@@ -450,7 +665,9 @@ export default function Navbar() {
             onClick={(e) =>
               goToSection(e, "contact")
             }
-            className={navLinkClass}
+            className={getNavLinkClass(
+              "contact"
+            )}
           >
             Contact Us
           </Link>
@@ -518,7 +735,6 @@ export default function Navbar() {
             px-6
             py-6
 
-
             shadow-xl
 
             backdrop-blur-xl
@@ -530,29 +746,33 @@ export default function Navbar() {
             className="
               flex
               flex-col
-              gap-5
+              gap-4
             "
           >
             {/* HOME */}
 
-            <Link
-              href="/"
-              onClick={() =>
-                setMenuOpen(false)
+            <MobileMainLink
+              href="#hero"
+              active={
+                activeNav === "home"
               }
-              className="
-                font-bold
-                text-[#26362F]
-              "
+              onClick={(e) =>
+                goToSection(e, "hero")
+              }
             >
               Home
-            </Link>
+            </MobileMainLink>
 
             {/* =================================================
                 ABOUT MOBILE
             ================================================== */}
 
-            <MobileGroup title="About Us">
+            <MobileGroup
+              title="About Us"
+              active={
+                activeNav === "about"
+              }
+            >
               <MobileLink
                 href="#about"
                 onClick={(e) =>
@@ -583,7 +803,10 @@ export default function Navbar() {
               <MobileLink
                 href="#why-unus"
                 onClick={(e) =>
-                  goToSection(e, "why-unus")
+                  goToSection(
+                    e,
+                    "why-unus"
+                  )
                 }
               >
                 Why Choose UNUS
@@ -603,53 +826,68 @@ export default function Navbar() {
                 OUR COMPANIES MOBILE
             ================================================== */}
 
-            <MobileLink
+            <MobileMainLink
               href="#companies"
+              active={
+                activeNav === "companies"
+              }
               onClick={(e) =>
-                goToSection(e, "companies")
+                goToSection(
+                  e,
+                  "companies"
+                )
               }
             >
               Our Companies
-            </MobileLink>
+            </MobileMainLink>
 
             {/* =================================================
                 SERVICES MOBILE
             ================================================== */}
 
-            <MobileLink
+            <MobileMainLink
               href="#services"
+              active={
+                activeNav === "services"
+              }
               onClick={(e) =>
                 goToSection(e, "services")
               }
             >
               Services
-            </MobileLink>
+            </MobileMainLink>
 
             {/* =================================================
-                PROJECTS MOBILE - NO DROPDOWN
+                PROJECTS MOBILE
             ================================================== */}
 
-            <MobileLink
+            <MobileMainLink
               href="#projects"
+              active={
+                activeNav === "projects"
+              }
               onClick={(e) =>
                 goToSection(e, "projects")
               }
             >
               Projects
-            </MobileLink>
+            </MobileMainLink>
 
             {/* =================================================
                 CONTACT MOBILE
             ================================================== */}
 
-            <MobileLink
+            <MobileMainLink
               href="#contact"
+              active={
+                activeNav === "contact"
+              }
               onClick={(e) =>
                 goToSection(e, "contact")
               }
             >
               Contact Us
-            </MobileLink>
+            </MobileMainLink>
           </nav>
         </div>
       )}
@@ -702,33 +940,45 @@ function DropdownLink({
 }
 
 /* =========================================================
-   MOBILE GROUP
+   MOBILE ABOUT GROUP
 ========================================================= */
 
 function MobileGroup({
   title,
   children,
+  active,
 }: {
   title: string;
   children: React.ReactNode;
+  active: boolean;
 }) {
   return (
     <div>
-      <p
-        className="
-          mb-3
+      <div
+        className={`
+          rounded-xl
+          px-3
+          py-2
 
           font-bold
 
-          text-[#145A46]
-        "
+          transition-colors
+          duration-200
+
+          ${
+            active
+              ? "bg-[#EAF3EE] text-[#145A46]"
+              : "text-[#26362F]"
+          }
+        `}
       >
         {title}
-      </p>
+      </div>
 
       <div
         className="
-          ml-3
+          ml-4
+          mt-3
 
           flex
           flex-col
@@ -742,7 +992,49 @@ function MobileGroup({
 }
 
 /* =========================================================
-   MOBILE LINK
+   MOBILE MAIN LINK
+========================================================= */
+
+function MobileMainLink({
+  href,
+  children,
+  onClick,
+  active,
+}: {
+  href: string;
+  children: React.ReactNode;
+  onClick: React.MouseEventHandler<HTMLAnchorElement>;
+  active: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      className={`
+        rounded-xl
+
+        px-3
+        py-2
+
+        font-bold
+
+        transition-all
+        duration-200
+
+        ${
+          active
+            ? "bg-[#EAF3EE] text-[#145A46]"
+            : "text-[#26362F] hover:bg-[#F3F7F5] hover:text-[#145A46]"
+        }
+      `}
+    >
+      {children}
+    </Link>
+  );
+}
+
+/* =========================================================
+   MOBILE SUB LINK
 ========================================================= */
 
 function MobileLink({
