@@ -17,8 +17,8 @@ import {
 
 const email = "unusconsultantsak@gmail.com";
 
-const phoneOneDisplay = "+91 837881317";
-const phoneOneNumber = "+91837881317";
+const phoneOneDisplay = "+91 83788 13147";
+const phoneOneNumber = "+918378813147";
 
 const phoneTwoDisplay = "+91 89993 94694";
 const phoneTwoNumber = "+918999394694";
