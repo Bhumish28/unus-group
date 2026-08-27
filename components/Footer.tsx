@@ -368,13 +368,13 @@ export default function Footer() {
 
                 <div>
                   <a
-                    href="tel:+91837881317"
+                    href="tel:+918378813147"
                     className="
                       block
                       sm:pointer-events-none
                     "
                   >
-                    +91 837881317
+                    +91 83788 13147
                   </a>
 
                   <a
